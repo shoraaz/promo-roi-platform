@@ -1,0 +1,15 @@
+{
+  "entity": "store_promo",
+  "features": [
+    "store_id",
+    "promo",
+    "sales",
+    "customers",
+    "open",
+    "day_of_week",
+    "month",
+    "sales_lift_pct",
+    "margin_impact"
+  ],
+  "description": "Schema placeholder for Rossmann promo ROI feature engineering."
+}

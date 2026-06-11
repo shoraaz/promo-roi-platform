@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+*.env
+
+# GCP credentials — NEVER commit these
+application_default_credentials.json
+*-credentials.json
+service-account*.json
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# ML artifacts — too large for git
+*.pkl
+*.joblib
+models/

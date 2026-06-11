@@ -1,0 +1,8 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/promo-roi/promo-training:latest', './training']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/promo-roi/promo-serving:latest', './serving']
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/promo-roi/promo-training:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/promo-roi/promo-serving:latest'

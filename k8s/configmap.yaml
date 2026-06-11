@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promo-serving-config
+  labels:
+    app: promo-serving
+data:
+  MODEL_BUCKET: "your-gcs-bucket"
+  REGION: "us-central1"
