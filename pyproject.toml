@@ -1,0 +1,20 @@
+[project]
+name = "promo-roi-platform"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "black==24.8.0",
+    "fastapi>=0.136.3",
+    "httpx2>=2.4.0",
+    "pytest==8.3.2",
+    "ruff==0.6.9",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.4.0",
+    "pytest>=8.3.2",
+    "pytest-anyio>=0.0.0",
+]
