@@ -3,7 +3,13 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
-from schemas import PredictionResponse, PromotionRequest
+
+
+
+try:
+    from schemas import PredictionResponse, PromotionRequest      # Docker context
+except ModuleNotFoundError:
+    from serving.schemas import PredictionResponse, PromotionRequest  # test context
 
 app = FastAPI(title="Promo ROI Serving API")
 

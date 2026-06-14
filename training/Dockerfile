@@ -6,7 +6,9 @@ FROM python:3.12-slim
 # All subsequent commands run from here
 # Think of it as "cd /app" that persists
 WORKDIR /app
-
+# Bake MLflow config into image — can't be accidentally overridden
+ENV MLFLOW_TRACKING_URI=sqlite:////tmp/mlflow.db
+ENV GIT_PYTHON_REFRESH=quiet
 # Copy requirements FIRST — before any source code
 # Why: Docker caches layers. If requirements.txt hasn't changed,
 # pip install is skipped on the next build. This saves minutes.
