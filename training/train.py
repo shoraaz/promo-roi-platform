@@ -30,9 +30,10 @@ PROJECT_ID = os.environ.get("PROJECT_ID", "promo-roi-platform-2026")
 DATASET_ID = os.environ.get("DATASET_ID", "promo_roi")
 TABLE_ID = os.environ.get("TABLE_ID", "promo_features")
 GCS_BUCKET = os.environ.get("GCS_BUCKET", "promo-roi-platform-2026-data")
-MLFLOW_TRACKING_URI = os.environ.get(
-    "MLFLOW_TRACKING_URI",
-    f"gs://{GCS_BUCKET}/mlflow"
+MLFLOW_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI", "sqlite:////tmp/mlflow.db")
+MLFLOW_ARTIFACT_URI = os.environ.get(
+    "MLFLOW_ARTIFACT_URI",
+    f"gs://{GCS_BUCKET}/mlflow/artifacts"
 )
 EXPERIMENT_NAME = os.environ.get("EXPERIMENT_NAME", "promo-roi-xgboost")
 
@@ -104,7 +105,7 @@ def load_features() -> pd.DataFrame:
     """
     
     # to_dataframe() uses pyarrow under the hood for fast transfer
-    df = client.query(query).to_dataframe()
+    df = client.query(query).to_dataframe(create_bqstorage_client=False)
     print(f"Loaded {len(df):,} rows, {df.shape[1]} columns")
     return df
 
@@ -303,7 +304,7 @@ def main() -> None:
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     mlflow.set_experiment(EXPERIMENT_NAME)
     
-    with mlflow.start_run() as run:
+    with mlflow.start_run(tags={"project": "promo-roi-platform", "phase": "training"}) as run:
         run_id = run.info.run_id
         print(f"\nMLflow run ID: {run_id}")
         
