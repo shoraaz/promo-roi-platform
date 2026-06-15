@@ -6,7 +6,7 @@ from google.cloud import aiplatform
 PROJECT_ID = "promo-roi-platform-2026"
 REGION = "us-central1"
 BUCKET = "promo-roi-platform-2026-data"
-IMAGE_URI = "us-central1-docker.pkg.dev/promo-roi-platform-2026/ml-repo/promo-training:v7"
+IMAGE_URI = "us-central1-docker.pkg.dev/promo-roi-platform-2026/ml-repo/promo-training:v8"
 SERVICE_ACCOUNT = "vertex-training-sa@promo-roi-platform-2026.iam.gserviceaccount.com"
 
 def submit_job():
@@ -18,7 +18,7 @@ def submit_job():
     )
 
     job = aiplatform.CustomContainerTrainingJob(
-        display_name="promo-roi-training-v7",
+        display_name="promo-roi-training-v8",
         container_uri=IMAGE_URI,
     )
 

@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: promo-serving
 spec:
-  type: LoadBalancer
+  type: ClusterIP        # changed from LoadBalancer — internal only now
   selector:
     app: promo-serving
   ports:
