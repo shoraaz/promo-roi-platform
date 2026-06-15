@@ -23,7 +23,6 @@ spec:
           ports:
             - containerPort: 8080
 
-          # Environment variables our model_utils.py reads
           env:
             - name: PROJECT_ID
               value: "promo-roi-platform-2026"
@@ -40,16 +39,22 @@ spec:
               cpu: "500m"
               memory: "1Gi"
 
-          # Liveness probe — restart container if this fails
-          # Generous initialDelaySeconds because model loading takes a few seconds
+          # NEW — handles slow/cold startup (up to 150s)
+          # Once this succeeds ONCE, livenessProbe takes over
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 5
+
+          # Now only handles ONGOING health, post-startup
           livenessProbe:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 15
             periodSeconds: 10
 
-          # Readiness probe — don't send traffic until models are loaded
           readinessProbe:
             httpGet:
               path: /ready

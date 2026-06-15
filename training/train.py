@@ -292,7 +292,6 @@ def save_artifacts(
     print(f"\nArtifacts saved to GCS under: gs://{GCS_BUCKET}/models/{run_id}/")
     return artifact_paths
 
-
 def main() -> None:
     """Main training entry point."""
     
@@ -353,6 +352,17 @@ def main() -> None:
         for target, m in metrics.items():
             print(f"{target}: RMSE={m['rmse']:.4f}, R²={m['r2']:.4f}")
         print("=" * 60)
+
+    # ── 8. Upload MLflow SQLite database to GCS ──────────────────
+    # Runs AFTER the `with` block exits, so MLflow has closed
+    # its connection to the SQLite file — safe to upload
+    mlflow_db_path = "/tmp/mlflow.db"
+    if os.path.exists(mlflow_db_path):
+        client = storage.Client(project=PROJECT_ID)
+        bucket = client.bucket(GCS_BUCKET)
+        gcs_mlflow_path = f"mlflow/runs/{run_id}/mlflow.db"
+        bucket.blob(gcs_mlflow_path).upload_from_filename(mlflow_db_path)
+        print(f"\nMLflow database uploaded to: gs://{GCS_BUCKET}/{gcs_mlflow_path}")
 
 
 if __name__ == "__main__":
