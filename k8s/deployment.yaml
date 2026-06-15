@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: promo-serving
+  labels:
+    app: promo-serving
 spec:
   replicas: 2
   selector:
@@ -12,15 +14,45 @@ spec:
       labels:
         app: promo-serving
     spec:
+      # This Pod will act as the GCP service account below
+      # (configured via Workload Identity — set up next)
+      serviceAccountName: promo-serving-ksa
       containers:
         - name: promo-serving
-          image: us-central1-docker.pkg.dev/PROJECT_ID/promo-roi/promo-serving:latest
+          image: us-central1-docker.pkg.dev/promo-roi-platform-2026/ml-repo/promo-serving:v2
           ports:
             - containerPort: 8080
+
+          # Environment variables our model_utils.py reads
+          env:
+            - name: PROJECT_ID
+              value: "promo-roi-platform-2026"
+            - name: GCS_BUCKET
+              value: "promo-roi-platform-2026-data"
+            - name: MODEL_RUN_ID
+              value: "5b88b989d6c64e75908f48254c262a72"
+
           resources:
             requests:
               cpu: "250m"
-              memory: "256Mi"
+              memory: "512Mi"
             limits:
               cpu: "500m"
-              memory: "512Mi"
+              memory: "1Gi"
+
+          # Liveness probe — restart container if this fails
+          # Generous initialDelaySeconds because model loading takes a few seconds
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          # Readiness probe — don't send traffic until models are loaded
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
