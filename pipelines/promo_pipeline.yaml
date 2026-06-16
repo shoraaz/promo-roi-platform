@@ -1,0 +1,216 @@
+# PIPELINE DEFINITION
+# Name: promo-roi-training-pipeline
+components:
+  comp-evaluate-component:
+    executorLabel: exec-evaluate-component
+    inputDefinitions:
+      artifacts:
+        input_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+        margin_impact_model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+        sales_lift_model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+    outputDefinitions:
+      artifacts:
+        metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+  comp-load-features-component:
+    executorLabel: exec-load-features-component
+    outputDefinitions:
+      artifacts:
+        output_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+  comp-train-component:
+    executorLabel: exec-train-component
+    inputDefinitions:
+      artifacts:
+        input_data:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+    outputDefinitions:
+      artifacts:
+        margin_impact_model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+        sales_lift_model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+deploymentSpec:
+  executors:
+    exec-evaluate-component:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - evaluate_component
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.16.1'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef evaluate_component(\n    input_data: Input[Dataset],\n    sales_lift_model:\
+          \ Input[Model],\n    margin_impact_model: Input[Model],\n    metrics: Output[Metrics],\n\
+          ):\n    \"\"\"Evaluate both models on the validation set.\"\"\"\n    import\
+          \ pandas as pd\n    import pickle\n    from train import split_data, get_features_and_targets,\
+          \ evaluate_models\n\n    df = pd.read_parquet(input_data.path)\n    _, val_df\
+          \ = split_data(df)\n    X_val, y_val = get_features_and_targets(val_df)\n\
+          \n    with open(sales_lift_model.path, \"rb\") as f:\n        model_lift\
+          \ = pickle.load(f)\n    with open(margin_impact_model.path, \"rb\") as f:\n\
+          \        model_margin = pickle.load(f)\n\n    results = evaluate_models(\n\
+          \        {\"sales_lift_pct\": model_lift, \"margin_impact\": model_margin},\
+          \ X_val, y_val\n    )\n\n    for target, target_metrics in results.items():\n\
+          \        for metric_name, value in target_metrics.items():\n           \
+          \ metrics.log_metric(f\"{target}_{metric_name}\", value)\n            print(f\"\
+          {target}_{metric_name}: {value:.4f}\")\n\n"
+        image: us-central1-docker.pkg.dev/promo-roi-platform-2026/ml-repo/promo-training:v8
+    exec-load-features-component:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - load_features_component
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.16.1'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef load_features_component(output_data: Output[Dataset]):\n    \"\
+          \"\"Load and prepare features from BigQuery.\"\"\"\n    from train import\
+          \ load_features, encode_categoricals\n\n    df = load_features()\n    df\
+          \ = encode_categoricals(df)\n    df.to_parquet(output_data.path)\n    print(f\"\
+          Loaded {len(df)} rows, saved to {output_data.path}\")\n\n"
+        image: us-central1-docker.pkg.dev/promo-roi-platform-2026/ml-repo/promo-training:v8
+    exec-train-component:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - train_component
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.16.1'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef train_component(\n    input_data: Input[Dataset],\n    sales_lift_model:\
+          \ Output[Model],\n    margin_impact_model: Output[Model],\n):\n    \"\"\"\
+          Train both XGBoost models.\"\"\"\n    import pandas as pd\n    import pickle\n\
+          \    from train import split_data, get_features_and_targets, train_models\n\
+          \n    df = pd.read_parquet(input_data.path)\n    train_df, val_df = split_data(df)\n\
+          \    X_train, y_train = get_features_and_targets(train_df)\n\n    models\
+          \ = train_models(X_train, y_train)\n\n    with open(sales_lift_model.path,\
+          \ \"wb\") as f:\n        pickle.dump(models[\"sales_lift_pct\"], f)\n  \
+          \  with open(margin_impact_model.path, \"wb\") as f:\n        pickle.dump(models[\"\
+          margin_impact\"], f)\n\n    print(\"Both models trained and saved.\")\n\n"
+        image: us-central1-docker.pkg.dev/promo-roi-platform-2026/ml-repo/promo-training:v8
+pipelineInfo:
+  name: promo-roi-training-pipeline
+root:
+  dag:
+    tasks:
+      evaluate-component:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-evaluate-component
+        dependentTasks:
+        - load-features-component
+        - train-component
+        inputs:
+          artifacts:
+            input_data:
+              taskOutputArtifact:
+                outputArtifactKey: output_data
+                producerTask: load-features-component
+            margin_impact_model:
+              taskOutputArtifact:
+                outputArtifactKey: margin_impact_model
+                producerTask: train-component
+            sales_lift_model:
+              taskOutputArtifact:
+                outputArtifactKey: sales_lift_model
+                producerTask: train-component
+        taskInfo:
+          name: evaluate-component
+      load-features-component:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-load-features-component
+        taskInfo:
+          name: load-features-component
+      train-component:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-train-component
+        dependentTasks:
+        - load-features-component
+        inputs:
+          artifacts:
+            input_data:
+              taskOutputArtifact:
+                outputArtifactKey: output_data
+                producerTask: load-features-component
+        taskInfo:
+          name: train-component
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.16.1
