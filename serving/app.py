@@ -5,6 +5,7 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
+from prometheus_fastapi_instrumentator import Instrumentator
 
 try:
     from model_utils import model_registry          # Docker context
@@ -24,12 +25,7 @@ except ModuleNotFoundError:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load model artifacts from GCS once at startup.
-    
-    FastAPI's lifespan context manager runs this code before
-    the app starts accepting requests, and again on shutdown
-    (we have nothing to clean up, so the 'after yield' part is empty).
-    """
+    """Load model artifacts from GCS once at startup."""
     print("Starting up — loading model artifacts...")
     model_registry.load_from_gcs()
     yield
@@ -38,27 +34,21 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Promo ROI Serving API", lifespan=lifespan)
 
+# Attach Prometheus instrumentation — this adds a /metrics endpoint
+# automatically tracking request count, latency, and status codes
+# for every route, with zero per-endpoint code changes needed.
+Instrumentator().instrument(app).expose(app)
+
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    """Liveness probe — is the container alive?
-    
-    Always returns ok if the process is running, regardless
-    of whether models are loaded. Kubernetes uses this to decide
-    whether to RESTART the container.
-    """
+    """Liveness probe — is the container alive?"""
     return {"status": "ok"}
 
 
 @app.get("/ready")
 def ready() -> dict[str, str]:
-    """Readiness probe — is the container ready to serve traffic?
-    
-    Returns 'ready' only once models are loaded from GCS.
-    Kubernetes uses this to decide whether to SEND TRAFFIC
-    to this pod. During the ~5-10 seconds of model loading
-    at startup, this returns 'loading' and no traffic is sent.
-    """
+    """Readiness probe — is the container ready to serve traffic?"""
     if model_registry.is_ready:
         return {"status": "ready"}
     return {"status": "loading"}
@@ -66,16 +56,10 @@ def ready() -> dict[str, str]:
 
 @app.post("/predict", response_model=PredictionResponse)
 def predict(payload: PromotionRequest) -> PredictionResponse:
-    """Predict promotion ROI with SHAP explanations.
-
-    Builds a feature dictionary from the request, passes it to
-    the model registry, and returns predictions for both targets
-    plus the top 3 SHAP feature contributions for each.
-    """
+    """Predict promotion ROI with SHAP explanations."""
     if not model_registry.is_ready:
         raise HTTPException(status_code=503, detail="Models still loading")
 
-    # Build feature dict — keys must match feature_names.pkl exactly
     feature_dict = {
         "DayOfWeek": payload.DayOfWeek,
         "competition_distance": payload.competition_distance,
@@ -91,7 +75,6 @@ def predict(payload: PromotionRequest) -> PredictionResponse:
     }
 
     results = model_registry.predict_with_explanation(feature_dict)
-
     margin_impact = results["margin_impact"]["prediction"]
     roi_verdict = "POSITIVE" if margin_impact >= 0 else "NEGATIVE"
 
