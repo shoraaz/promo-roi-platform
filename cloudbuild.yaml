@@ -19,6 +19,17 @@ steps:
       - 'us-central1-docker.pkg.dev/$PROJECT_ID/ml-repo/promo-serving:latest'
       - './serving'
 
+  # Step 3 — Update the deployment to use the NEW serving image
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'set'
+      - 'image'
+      - 'deployment/promo-serving'
+      - 'promo-serving=us-central1-docker.pkg.dev/$PROJECT_ID/ml-repo/promo-serving:$SHORT_SHA'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=promo-roi-cluster'
+
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/ml-repo/promo-training:$SHORT_SHA'
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/ml-repo/promo-training:latest'
