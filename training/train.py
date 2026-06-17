@@ -19,7 +19,13 @@ import shap
 import xgboost as xgb
 from google.cloud import bigquery, storage
 from sklearn.metrics import mean_squared_error, r2_score
-from feature_utils import ALL_FEATURE_COLS, CATEGORICAL_COLS, FEATURE_COLS, TARGET_COLS
+from feature_utils import (
+    ALL_FEATURE_COLS,
+    CATEGORICAL_COLS,
+    FEATURE_COLS,
+    TARGET_COLS,
+    add_interaction_features,
+)
 
 
 # ─────────────────────────────────────────────
@@ -60,7 +66,7 @@ FEATURE_COLS_justforseeing = [
 
 # XGBoost hyperparameters, per target.
 # sales_lift_pct: original defaults — not yet tuned.
-# margin_impact: tuned via Optuna (50-trial study, Phase 9).
+# margin_impact: tuned via Optuna (50-trial study, Phase 9 Part 1).
 #   Baseline RMSE=271.7008 -> Tuned RMSE=258.8130 (~4.7% improvement)
 #   Search revealed deeper trees (max_depth 9-10) and lower
 #   colsample_bytree (~0.60-0.70) consistently outperformed the
@@ -162,9 +168,13 @@ def split_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 def get_features_and_targets(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Separate feature matrix X from target matrix y."""
-    all_feature_cols = FEATURE_COLS + CATEGORICAL_COLS
-    X = df[all_feature_cols]
+    """Separate feature matrix X from target matrix y.
+
+    Uses ALL_FEATURE_COLS (FEATURE_COLS + CATEGORICAL_COLS +
+    INTERACTION_COLS) so the Phase 9 engineered interaction
+    features are automatically included once present in df.
+    """
+    X = df[ALL_FEATURE_COLS]
     y = df[TARGET_COLS]
     return X, y
 
@@ -335,12 +345,16 @@ def main() -> None:
         for target, params in XGBOOST_PARAMS.items():
             for param_name, value in params.items():
                 mlflow.log_param(f"{target}_{param_name}", value)
-        mlflow.log_param("feature_cols", FEATURE_COLS)
+        mlflow.log_param("feature_cols", ALL_FEATURE_COLS)
         mlflow.log_param("target_cols", TARGET_COLS)
         
         # ── 3. Load data ─────────────────────────────────────────
         df = load_features()
         df = encode_categoricals(df)
+        # Interaction features MUST be added AFTER categorical
+        # encoding — competition_x_storetype multiplies against
+        # StoreType's integer-encoded form, not its raw string form.
+        df = add_interaction_features(df)
         train_df, val_df = split_data(df)
         
         X_train, y_train = get_features_and_targets(train_df)
@@ -365,7 +379,7 @@ def main() -> None:
         explainers, shap_values = compute_shap_values(models, X_sample)
         
         # ── 7. Save artifacts to GCS ─────────────────────────────
-        feature_names = FEATURE_COLS + CATEGORICAL_COLS
+        feature_names = ALL_FEATURE_COLS
         artifact_paths = save_artifacts(models, explainers, feature_names, run_id)
         
         # Log artifact paths to MLflow so we can find them later
