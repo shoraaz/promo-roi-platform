@@ -58,16 +58,33 @@ FEATURE_COLS_justforseeing = [
 # The two targets we predict simultaneously
 #TARGET_COLS = ["sales_lift_pct", "margin_impact"]
 
-# XGBoost hyperparameters
-# These are reasonable starting defaults — MLflow will track them
+# XGBoost hyperparameters, per target.
+# sales_lift_pct: original defaults — not yet tuned.
+# margin_impact: tuned via Optuna (50-trial study, Phase 9).
+#   Baseline RMSE=271.7008 -> Tuned RMSE=258.8130 (~4.7% improvement)
+#   Search revealed deeper trees (max_depth 9-10) and lower
+#   colsample_bytree (~0.60-0.70) consistently outperformed the
+#   original shallower defaults — suggesting more complex feature
+#   interactions for this target than initially modeled.
 XGBOOST_PARAMS = {
-    "n_estimators": 500,
-    "learning_rate": 0.05,
-    "max_depth": 6,
-    "subsample": 0.8,
-    "colsample_bytree": 0.8,
-    "random_state": 42,
-    "n_jobs": -1,  # use all available CPU cores
+    "sales_lift_pct": {
+        "n_estimators": 500,
+        "learning_rate": 0.05,
+        "max_depth": 6,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "random_state": 42,
+        "n_jobs": -1,  # use all available CPU cores
+    },
+    "margin_impact": {
+        "n_estimators": 800,
+        "learning_rate": 0.03982009645961388,
+        "max_depth": 10,
+        "subsample": 0.985652684899661,
+        "colsample_bytree": 0.6088786911506849,
+        "random_state": 42,
+        "n_jobs": -1,
+    },
 }
 
 
@@ -164,13 +181,18 @@ def train_models(
     separately when the two targets have different signal patterns.
     sales_lift_pct and margin_impact have different drivers — separate
     models capture this better.
+
+    Each target now uses its OWN hyperparameters (see XGBOOST_PARAMS
+    above) — margin_impact uses Optuna-tuned params from Phase 9,
+    while sales_lift_pct still uses the original defaults.
     """
     models = {}
     
     for target in TARGET_COLS:
         print(f"\nTraining model for: {target}")
+        print(f"  Params: {XGBOOST_PARAMS[target]}")
         
-        model = xgb.XGBRegressor(**XGBOOST_PARAMS)
+        model = xgb.XGBRegressor(**XGBOOST_PARAMS[target])
         model.fit(
             X_train,
             y_train[target],
@@ -308,7 +330,11 @@ def main() -> None:
         print(f"\nMLflow run ID: {run_id}")
         
         # ── 2. Log hyperparameters ───────────────────────────────
-        mlflow.log_params(XGBOOST_PARAMS)
+        # Logged per-target with a prefix, since each target now has
+        # its own params (margin_impact is Optuna-tuned, Phase 9)
+        for target, params in XGBOOST_PARAMS.items():
+            for param_name, value in params.items():
+                mlflow.log_param(f"{target}_{param_name}", value)
         mlflow.log_param("feature_cols", FEATURE_COLS)
         mlflow.log_param("target_cols", TARGET_COLS)
         
