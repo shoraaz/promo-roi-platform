@@ -9,12 +9,13 @@ project already uses SHAP for explanations elsewhere.
 import pickle
 import sys
 
+sys.path.insert(0, "training")
+
+from feature_utils import add_interaction_features, add_seasonality_features
 import numpy as np
 from google.cloud import bigquery, storage
 
-sys.path.insert(0, "training")
-
-RUN_ID = "31f76f91af79479880eb270cb11fde42"
+RUN_ID = "4c7e4a2eece34d02910055e51ce89023"
 BUCKET = "promo-roi-platform-2026-data"
 PROJECT_ID = "promo-roi-platform-2026"
 
@@ -35,12 +36,10 @@ with open("feature_names.pkl", "rb") as f:
 
 # Pull a small, real sample to compute fresh SHAP values against —
 # same encode + interaction-feature steps train.py applies.
-from feature_utils import add_interaction_features
-
 bq_client = bigquery.Client(project=PROJECT_ID)
 query = f"""
     SELECT
-        DayOfWeek, StoreType, Assortment, competition_distance,
+        Date, DayOfWeek, StoreType, Assortment, competition_distance,
         store_enrolled_in_promo2, is_school_holiday, is_state_holiday,
         baseline_sales_30d, lag_7_sales, lag_30_sales,
         days_since_last_promo
@@ -54,6 +53,7 @@ for col in ["StoreType", "Assortment"]:
     df[col] = df[col].astype("category").cat.codes
 
 df = add_interaction_features(df)
+df = add_seasonality_features(df)
 X_sample = df[feature_names]
 
 shap_values = explainer.shap_values(X_sample)
