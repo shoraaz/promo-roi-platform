@@ -74,13 +74,13 @@ FEATURE_COLS_justforseeing = [
 #   interactions for this target than initially modeled.
 XGBOOST_PARAMS = {
     "sales_lift_pct": {
-        "n_estimators": 500,
-        "learning_rate": 0.05,
-        "max_depth": 6,
-        "subsample": 0.8,
-        "colsample_bytree": 0.8,
+        "n_estimators": 626,
+        "learning_rate": 0.07671043293956005,
+        "max_depth": 9,
+        "subsample": 0.7971644260824791,
+        "colsample_bytree": 0.6469312737809327,
         "random_state": 42,
-        "n_jobs": -1,  # use all available CPU cores
+        "n_jobs": -1,
     },
     "margin_impact": {
         "n_estimators": 800,
