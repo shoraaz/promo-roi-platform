@@ -5,7 +5,7 @@ trial logged as a nested MLflow run for later comparison.
 """
 
 from __future__ import annotations
-
+from train import add_interaction_features
 import os
 import numpy as np
 
@@ -22,8 +22,9 @@ from train import (
     MLFLOW_TRACKING_URI,
 )
 
+
 EXPERIMENT_NAME = "promo-roi-tuning"
-TARGET = "margin_impact"
+TARGET = os.environ.get("TUNING_TARGET", "margin_impact")
 N_TRIALS = 50
 
 
@@ -66,6 +67,7 @@ def main() -> None:
     print("Loading features...")
     df = load_features()
     df = encode_categoricals(df)
+    df = add_interaction_features(df)
     train_df, val_df = split_data(df)
     X_train, y_train = get_features_and_targets(train_df)
     X_val, y_val = get_features_and_targets(val_df)
