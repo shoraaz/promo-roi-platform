@@ -30,3 +30,20 @@ Thumbs.db
 *.pkl
 *.joblib
 models/
+
+# Generated reports & outputs — do not commit
+drift_report.html
+predictions_output.jsonl
+*.jsonl
+
+# MLflow local database
+mlflow_local/*.db
+*.db
+
+# System / IDE generated files
+ERROR
+[internal]
+
+# Node / Next.js (demo app build artifacts)
+demo/.next/
+demo/node_modules/

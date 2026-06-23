@@ -24,6 +24,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY train.py .
 COPY label_engineering.py .
 COPY feature_utils.py .
+COPY tune.py .
 
 # Default command when container starts
 # Can be overridden at runtime with: docker run <image> python other_script.py
