@@ -9,8 +9,17 @@
 [![XGBoost](https://img.shields.io/badge/ML-XGBoost-orange?style=flat)](https://xgboost.readthedocs.io/)
 [![FastAPI](https://img.shields.io/badge/Serving-FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](LICENSE)
+[![Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=flat&logo=vercel&logoColor=white)](https://promo-roi-platform.vercel.app)
 
 </div>
+
+---
+
+## 🚀 Live Demo
+
+> **[→ View the interactive demo on Vercel](https://promo-roi-platform.vercel.app)**
+
+An interactive dashboard showcasing the platform's capabilities — live architecture diagram, model metrics, and a promotion ROI prediction simulator. No GCP account needed.
 
 ---
 
@@ -87,6 +96,8 @@ promo-roi-platform/
 ├── tests/                  # pytest suite
 ├── docs/                   # Phase-by-phase engineering notes (11 phases)
 ├── data/                   # Local data samples / schemas
+├── demo/                   # Interactive demo app (Next.js → deployed on Vercel)
+├── mini_exercise/          # Vertex AI Model Registry / Endpoints / Batch Prediction
 ├── mlflow_local/           # Local MLflow tracking server config
 ├── check_drift.py          # Standalone Evidently drift report
 ├── check_shap_importance.py # Standalone SHAP feature importance
@@ -224,6 +235,7 @@ Each phase in [`docs/`](docs/) is a candid engineering post-mortem — real bugs
 | **Kubernetes** | Deployments, Services, Ingress, HPA, Workload Identity |
 | **Monitoring** | Prometheus, Grafana |
 | **Dev Tooling** | uv, Ruff, Black, pytest |
+| **Demo** | Next.js 14, Tailwind CSS, Vercel |
 
 ---
 
