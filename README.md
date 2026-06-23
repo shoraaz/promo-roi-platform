@@ -9,7 +9,7 @@
 [![XGBoost](https://img.shields.io/badge/ML-XGBoost-orange?style=flat)](https://xgboost.readthedocs.io/)
 [![FastAPI](https://img.shields.io/badge/Serving-FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](LICENSE)
-[![Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=flat&logo=vercel&logoColor=white)](https://promo-roi-platform.vercel.app)
+[![Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=flat&logo=vercel&logoColor=white)](https://demo-three-kohl-53.vercel.app)
 
 </div>
 
@@ -17,7 +17,7 @@
 
 ## 🚀 Live Demo
 
-> **[→ View the interactive demo on Vercel](https://promo-roi-platform.vercel.app)**
+> **[→ View the interactive demo on Vercel](https://demo-three-kohl-53.vercel.app)**
 
 An interactive dashboard showcasing the platform's capabilities — live architecture diagram, model metrics, and a promotion ROI prediction simulator. No GCP account needed.
 
