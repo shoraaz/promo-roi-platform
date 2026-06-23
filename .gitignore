@@ -44,6 +44,9 @@ mlflow_local/*.db
 ERROR
 [internal]
 
+# Local-only folders (not for public repo)
+mini_exercise/
+
 # Node / Next.js (demo app build artifacts)
 demo/.next/
 demo/node_modules/

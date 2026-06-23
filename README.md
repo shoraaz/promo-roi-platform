@@ -9,7 +9,7 @@
 [![XGBoost](https://img.shields.io/badge/ML-XGBoost-orange?style=flat)](https://xgboost.readthedocs.io/)
 [![FastAPI](https://img.shields.io/badge/Serving-FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](LICENSE)
-[![Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=flat&logo=vercel&logoColor=white)](https://demo-three-kohl-53.vercel.app)
+[![Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=flat&logo=vercel&logoColor=white)](https://promo-roi.vercel.app)
 
 </div>
 
@@ -17,7 +17,7 @@
 
 ## 🚀 Live Demo
 
-> **[→ View the interactive demo on Vercel](https://demo-three-kohl-53.vercel.app)**
+> **[→ View the interactive demo on Vercel](https://promo-roi.vercel.app)**
 
 An interactive dashboard showcasing the platform's capabilities — live architecture diagram, model metrics, and a promotion ROI prediction simulator. No GCP account needed.
 
@@ -94,10 +94,9 @@ promo-roi-platform/
 ├── ranker/                 # Promotion ranking utilities (LambdaMART — WIP)
 ├── k8s/                    # Kubernetes manifests (Deployment, Service, Ingress, HPA)
 ├── tests/                  # pytest suite
-├── docs/                   # Phase-by-phase engineering notes (11 phases)
+├── docs/                   # Phase reference notes (12 phases)
 ├── data/                   # Local data samples / schemas
 ├── demo/                   # Interactive demo app (Next.js → deployed on Vercel)
-├── mini_exercise/          # Vertex AI Model Registry / Endpoints / Batch Prediction
 ├── mlflow_local/           # Local MLflow tracking server config
 ├── check_drift.py          # Standalone Evidently drift report
 ├── check_shap_importance.py # Standalone SHAP feature importance
@@ -206,21 +205,22 @@ Prometheus-format scrape endpoint — request counts, latency histogram, predict
 
 ## Engineering Documentation
 
-Each phase in [`docs/`](docs/) is a candid engineering post-mortem — real bugs, root causes, and fixes. Not idealized tutorials.
+The [`docs/`](docs/) folder contains reference notes for each build phase — key decisions, commands, and concepts used throughout the project.
 
 | # | Phase | Key Topics |
 |---|-------|-----------|
+| 00 | Project Overview | Goals, scope, what was built |
 | 01 | Data Layer | BigQuery schema design, label engineering, feature SQL |
 | 02 | Docker | Multi-stage builds, layer caching, `.dockerignore` strategy |
-| 03 | Vertex AI Training | Custom Training Jobs, the v6/v7 model mistagging bug |
-| 04 | GKE Deployment | Workload Identity setup, liveness/readiness probes, the SIGKILL OOM incident |
-| 05 | Kubernetes Advanced | HPA configuration, Ingress, Helm constraints on Autopilot |
-| 06 | Vertex AI Pipelines | KFP v2 components, pipeline caching, artifact passing patterns |
+| 03 | Kubernetes Concepts | Pods, Services, Deployments, HPA, Ingress |
+| 04 | Vertex AI Training | Custom Training Jobs, the v6/v7 model mistagging bug |
+| 05 | Serving Layer | FastAPI app, GCS model loading, Pydantic schemas |
+| 06 | MLOps Pipelines | KFP v2 components, pipeline caching, artifact passing patterns |
 | 07 | CI/CD | Cloud Build triggers, SHA-tagging strategy, dedicated service account pattern |
 | 08 | Monitoring | Prometheus histogram mechanics, Grafana dashboards, debugging detours |
-| 09 | Model Improvement | Optuna tuning, SHAP-validated feature engineering, Evidently drift (3 parts) |
-| 10 | Mini-Exercise | Vertex AI Model Registry, Endpoints, Batch Prediction, Model Monitoring |
-| 11 | End-to-End Map | Full lifecycle trace, recurring architectural patterns named explicitly |
+| 09 | SHAP Explainability | Feature importance, SHAP values, interaction features |
+| 10 | Ranker / LambdaMART | Promotion ranking design (scoped, deferred) |
+| 11 | Interview Prep | Key talking points, system design angles, tradeoff decisions |
 
 ---
 
