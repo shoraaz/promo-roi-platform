@@ -1,13 +1,111 @@
+<div align="center">
+
+# 🏪 Promo ROI Platform
+
+**End-to-end MLOps platform that predicts promotional sales lift and margin impact for FMCG retail stores — trained on GCP Vertex AI, served on GKE, monitored with Prometheus/Grafana.**
+
+[![Python](https://img.shields.io/badge/Python-3.14-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![GCP](https://img.shields.io/badge/Cloud-GCP-4285F4?style=flat&logo=google-cloud&logoColor=white)](https://cloud.google.com/)
+[![XGBoost](https://img.shields.io/badge/ML-XGBoost-orange?style=flat)](https://xgboost.readthedocs.io/)
+[![FastAPI](https://img.shields.io/badge/Serving-FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](LICENSE)
+
+</div>
 
 ---
 
-## 🚀 Quick Start
+## What This Project Does
+
+A retail merchandising team runs dozens of promotions per week. Before this system, approvals were gut-feel decisions. After: a structured ROI verdict — `POSITIVE_ROI` or `NEGATIVE_ROI` — backed by a multi-output XGBoost model that predicts both **sales lift %** and **margin impact**, plus SHAP-driven explanations for each decision.
+
+The entire pipeline — from raw BigQuery data to a live GKE endpoint with drift detection and CI/CD — is production-grade and battle-tested. Each phase has a detailed post-mortem in [`docs/`](docs/) with real bugs and how they were fixed.
+
+---
+
+## System Architecture
+
+```
+BigQuery (raw sales/promo data)
+        │
+        ▼
+┌─────────────────────────────────┐
+│  Vertex AI Pipelines (KFP v2)   │  ← feature engineering, train, evaluate, register
+│  · Data validation              │
+│  · XGBoost multi-output train   │
+│  · Optuna hyperparameter tuning │
+│  · SHAP feature validation      │
+│  · Evidently drift check        │
+└────────────────┬────────────────┘
+                 │  model artifact → GCS
+                 ▼
+┌─────────────────────────────────┐
+│  GKE Autopilot (serving)        │
+│  · FastAPI + Uvicorn            │
+│  · Pydantic v2 validation       │
+│  · Prometheus /metrics endpoint │
+│  · HPA (CPU-based autoscaling)  │
+└────────────────┬────────────────┘
+                 │
+        ┌────────┴────────┐
+        ▼                 ▼
+  Grafana dashboards   Evidently
+  (latency, preds)     drift reports
+```
+
+**CI/CD:** Cloud Build triggers on every push → builds Docker images with SHA tags → deploys to GKE via `kubectl rollout`.
+
+---
+
+## Key Features
+
+- **Multi-output prediction** — single XGBoost model predicts `sales_lift_pct` and `margin_impact` simultaneously
+- **SHAP explanations** — every prediction includes top contributing features with impact values
+- **Optuna tuning** — automated hyperparameter search logged to MLflow
+- **Drift detection** — Evidently AI compares current feature distributions against training baseline
+- **Kubeflow Pipelines** — reproducible, cacheable training pipeline as code
+- **Workload Identity** — GKE pods access GCS/BigQuery without service account key files
+- **Prometheus + Grafana** — request count, latency histograms, prediction distribution metrics
+
+---
+
+## Project Structure
+
+```
+promo-roi-platform/
+├── training/               # Vertex AI custom training job (Docker)
+│   ├── Dockerfile
+│   ├── train.py            # XGBoost multi-output trainer
+│   └── requirements.txt
+├── serving/                # FastAPI inference server (Docker)
+│   ├── Dockerfile
+│   ├── app.py              # /predict, /health, /metrics endpoints
+│   ├── model_utils.py      # GCS model loading, feature engineering
+│   └── schemas.py          # Pydantic request/response models
+├── pipelines/              # Kubeflow Pipeline definitions (KFP v2)
+├── ranker/                 # Promotion ranking utilities (LambdaMART — WIP)
+├── k8s/                    # Kubernetes manifests (Deployment, Service, Ingress, HPA)
+├── tests/                  # pytest suite
+├── docs/                   # Phase-by-phase engineering notes (11 phases)
+├── data/                   # Local data samples / schemas
+├── mlflow_local/           # Local MLflow tracking server config
+├── check_drift.py          # Standalone Evidently drift report
+├── check_shap_importance.py # Standalone SHAP feature importance
+├── submit_training_job.py  # Trigger Vertex AI Custom Training Job
+├── submit_tuning_job.py    # Trigger Optuna tuning job on Vertex AI
+├── load_test.py            # Locust-style load test against /predict
+├── cloudbuild.yaml         # Cloud Build CI/CD pipeline
+└── pyproject.toml          # uv-managed Python project config
+```
+
+---
+
+## Quick Start
 
 ### Prerequisites
 
 - Python 3.14+ with [`uv`](https://github.com/astral-sh/uv)
-- GCP project with Vertex AI, GKE, BigQuery, Artifact Registry, GCS enabled
-- `gcloud` CLI authenticated: `gcloud auth application-default login`
+- GCP project with these APIs enabled: **Vertex AI, GKE, BigQuery, Artifact Registry, GCS, Cloud Build**
+- Authenticated CLI: `gcloud auth application-default login`
 
 ### 1. Clone & install
 
@@ -29,32 +127,36 @@ docker run --rm \
 ### 3. Submit to Vertex AI
 
 ```bash
+# Custom Training Job
 uv run python submit_training_job.py
+
+# Optuna hyperparameter tuning
+uv run python submit_tuning_job.py
 ```
 
-### 4. Check feature importance
+### 4. Validate the model
 
 ```bash
+# SHAP feature importance
 uv run python check_shap_importance.py
-```
 
-### 5. Run drift detection
-
-```bash
+# Evidently drift report
 uv run python check_drift.py
 ```
 
-### 6. Run tests
+### 5. Run the test suite
 
 ```bash
-uv run pytest tests/
+uv run pytest tests/ -v
 ```
 
 ---
 
-## 📡 API Reference
+## API Reference
 
 ### `POST /predict`
+
+Predict sales lift and ROI verdict for a proposed promotion.
 
 ```json
 // Request
@@ -83,58 +185,60 @@ uv run pytest tests/
 
 ### `GET /health`
 
-Returns `200 OK` with service status and model version.
+Returns `200 OK` with service status and loaded model version.
 
 ### `GET /metrics`
 
-Prometheus-format metrics endpoint — request count, latency histogram, prediction distribution.
+Prometheus-format scrape endpoint — request counts, latency histogram, prediction distribution.
 
 ---
 
-## 📚 Documentation
+## Engineering Documentation
 
-Each phase has a detailed writeup in [`docs/`](docs/) — real bugs encountered, root causes diagnosed, fixes applied. Not idealized walkthroughs.
+Each phase in [`docs/`](docs/) is a candid engineering post-mortem — real bugs, root causes, and fixes. Not idealized tutorials.
 
 | # | Phase | Key Topics |
-|---|---|---|
-| 01 | Data Layer | BigQuery schema, label engineering, feature SQL |
-| 02 | Docker | Multi-stage builds, layer caching strategy |
-| 03 | Vertex AI Training | Custom Training Jobs, the v6/v7 mistagging bug |
-| 04 | GKE Deployment | Workload Identity, probes, the SIGKILL incident |
-| 05 | Kubernetes Advanced | HPA, Ingress, Helm constraints on Autopilot |
-| 06 | Vertex AI Pipelines | KFP components, caching, artifact passing |
-| 07 | CI/CD | Cloud Build, SHA-tagging, dedicated-service-account pattern |
-| 08 | Monitoring | Prometheus/Grafana, histogram mechanics, debugging detours |
-| 09 | Model Improvement | Optuna tuning, SHAP-validated features, Evidently drift (3 parts) |
-| 10 | Mini-Exercise | Vertex AI Model Registry, Endpoints, Batch Prediction, Monitoring |
+|---|-------|-----------|
+| 01 | Data Layer | BigQuery schema design, label engineering, feature SQL |
+| 02 | Docker | Multi-stage builds, layer caching, `.dockerignore` strategy |
+| 03 | Vertex AI Training | Custom Training Jobs, the v6/v7 model mistagging bug |
+| 04 | GKE Deployment | Workload Identity setup, liveness/readiness probes, the SIGKILL OOM incident |
+| 05 | Kubernetes Advanced | HPA configuration, Ingress, Helm constraints on Autopilot |
+| 06 | Vertex AI Pipelines | KFP v2 components, pipeline caching, artifact passing patterns |
+| 07 | CI/CD | Cloud Build triggers, SHA-tagging strategy, dedicated service account pattern |
+| 08 | Monitoring | Prometheus histogram mechanics, Grafana dashboards, debugging detours |
+| 09 | Model Improvement | Optuna tuning, SHAP-validated feature engineering, Evidently drift (3 parts) |
+| 10 | Mini-Exercise | Vertex AI Model Registry, Endpoints, Batch Prediction, Model Monitoring |
 | 11 | End-to-End Map | Full lifecycle trace, recurring architectural patterns named explicitly |
 
 ---
 
-## ⚠️ Known Limitations (Honestly Stated)
+## Tech Stack
 
-- **No ground-truth feedback loop.** Predictions are never compared against realized outcomes — a genuine production system would close this loop.
-- **Cloud Build rebuilds both images on every push** regardless of which changed. Path-filtered triggers would fix this at scale; accepted as an inefficiency here.
-- **Drift detection uses a fixed historical split**, not genuinely live, continuously-arriving production traffic.
-- **Learning-to-rank (LambdaMART) was scoped but deferred.** Ranking is a meaningfully different problem formulation — shipping a half-understood version would weaken an otherwise consistently well-understood project.
-
----
-
-## 🛠️ Tech Stack
-
-| Category | Tools |
-|---|---|
+| Layer | Tools |
+|-------|-------|
 | **ML / Training** | XGBoost (multi-output), Optuna, SHAP, Evidently AI, MLflow |
-| **Serving** | FastAPI, Pydantic, Uvicorn, Docker |
+| **Serving** | FastAPI, Pydantic v2, Uvicorn, Docker |
 | **Cloud** | GCP: Vertex AI, GKE Autopilot, BigQuery, GCS, Artifact Registry, Cloud Build |
 | **Orchestration** | Kubeflow Pipelines (KFP v2), Vertex AI Pipelines |
 | **Kubernetes** | Deployments, Services, Ingress, HPA, Workload Identity |
 | **Monitoring** | Prometheus, Grafana |
-| **Dev tooling** | uv, Ruff, Black, pytest |
+| **Dev Tooling** | uv, Ruff, Black, pytest |
 
 ---
 
-## 📄 License
+## Honest Limitations
+
+This project is built to understand the real tradeoffs — not to paper over them.
+
+- **No feedback loop.** Predictions are never reconciled against realized outcomes. A true production system would close this loop with a delayed label ingestion pipeline.
+- **Drift detection uses a fixed historical split**, not genuinely live, continuously-arriving traffic. This is a meaningful gap from production behavior.
+- **Cloud Build rebuilds both images on every push** regardless of which changed. Path-filtered triggers would fix this; accepted as an acceptable inefficiency at this scale.
+- **Learning-to-rank (LambdaMART) was scoped but deferred.** Ranking is a meaningfully different problem formulation — shipping a half-understood version would weaken an otherwise well-understood project.
+
+---
+
+## License
 
 MIT — see [LICENSE](LICENSE).
 
