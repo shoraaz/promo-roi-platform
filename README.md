@@ -27,7 +27,7 @@ An interactive dashboard showcasing the platform's capabilities — live archite
 
 A retail merchandising team runs dozens of promotions per week. Before this system, approvals were gut-feel decisions. After: a structured ROI verdict — `POSITIVE_ROI` or `NEGATIVE_ROI` — backed by a multi-output XGBoost model that predicts both **sales lift %** and **margin impact**, plus SHAP-driven explanations for each decision.
 
-The entire pipeline — from raw BigQuery data to a live GKE endpoint with drift detection and CI/CD — is production-grade and battle-tested. Each phase has a detailed post-mortem in [`docs/`](docs/) with real bugs and how they were fixed.
+The entire pipeline — from raw BigQuery data to a live GKE endpoint with drift detection and CI/CD — is production-grade and battle-tested.
 
 ---
 
@@ -91,10 +91,8 @@ promo-roi-platform/
 │   ├── model_utils.py      # GCS model loading, feature engineering
 │   └── schemas.py          # Pydantic request/response models
 ├── pipelines/              # Kubeflow Pipeline definitions (KFP v2)
-├── ranker/                 # Promotion ranking utilities (LambdaMART — WIP)
 ├── k8s/                    # Kubernetes manifests (Deployment, Service, Ingress, HPA)
 ├── tests/                  # pytest suite
-├── docs/                   # Phase reference notes (12 phases)
 ├── data/                   # Local data samples / schemas
 ├── demo/                   # Interactive demo app (Next.js → deployed on Vercel)
 ├── mlflow_local/           # Local MLflow tracking server config
@@ -205,22 +203,7 @@ Prometheus-format scrape endpoint — request counts, latency histogram, predict
 
 ## Engineering Documentation
 
-The [`docs/`](docs/) folder contains reference notes for each build phase — key decisions, commands, and concepts used throughout the project.
-
-| # | Phase | Key Topics |
-|---|-------|-----------|
-| 00 | Project Overview | Goals, scope, what was built |
-| 01 | Data Layer | BigQuery schema design, label engineering, feature SQL |
-| 02 | Docker | Multi-stage builds, layer caching, `.dockerignore` strategy |
-| 03 | Kubernetes Concepts | Pods, Services, Deployments, HPA, Ingress |
-| 04 | Vertex AI Training | Custom Training Jobs, the v6/v7 model mistagging bug |
-| 05 | Serving Layer | FastAPI app, GCS model loading, Pydantic schemas |
-| 06 | MLOps Pipelines | KFP v2 components, pipeline caching, artifact passing patterns |
-| 07 | CI/CD | Cloud Build triggers, SHA-tagging strategy, dedicated service account pattern |
-| 08 | Monitoring | Prometheus histogram mechanics, Grafana dashboards, debugging detours |
-| 09 | SHAP Explainability | Feature importance, SHAP values, interaction features |
-| 10 | Ranker / LambdaMART | Promotion ranking design (scoped, deferred) |
-| 11 | Interview Prep | Key talking points, system design angles, tradeoff decisions |
+Detailed engineering notes for this project — decisions made, bugs hit, and tradeoffs — are kept locally and not published in this repo. The README and inline code comments serve as the primary reference for reviewers.
 
 ---
 
@@ -246,7 +229,6 @@ This project is built to understand the real tradeoffs — not to paper over the
 - **No feedback loop.** Predictions are never reconciled against realized outcomes. A true production system would close this loop with a delayed label ingestion pipeline.
 - **Drift detection uses a fixed historical split**, not genuinely live, continuously-arriving traffic. This is a meaningful gap from production behavior.
 - **Cloud Build rebuilds both images on every push** regardless of which changed. Path-filtered triggers would fix this; accepted as an acceptable inefficiency at this scale.
-- **Learning-to-rank (LambdaMART) was scoped but deferred.** Ranking is a meaningfully different problem formulation — shipping a half-understood version would weaken an otherwise well-understood project.
 
 ---
 
