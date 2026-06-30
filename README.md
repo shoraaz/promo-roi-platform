@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏪 Promo ROI Platform
+# 🔍 MarginLens
 
 **End-to-end MLOps platform that predicts promotional sales lift and margin impact for FMCG retail stores — trained on GCP Vertex AI, served on GKE, monitored with Prometheus/Grafana.**
 
@@ -18,6 +18,8 @@
 ## 🚀 Live Demo
 
 > **[→ View the interactive demo on Vercel](https://promo-roi.vercel.app)**
+>
+> *(Update this link once you rename the Vercel project — see note below)*
 
 An interactive dashboard showcasing the platform's capabilities — live architecture diagram, model metrics, and a promotion ROI prediction simulator. No GCP account needed.
 
@@ -80,7 +82,7 @@ BigQuery (raw sales/promo data)
 ## Project Structure
 
 ```
-promo-roi-platform/
+MarginLens/
 ├── training/               # Vertex AI custom training job (Docker)
 │   ├── Dockerfile
 │   ├── train.py            # XGBoost multi-output trainer
@@ -118,8 +120,8 @@ promo-roi-platform/
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/shoraaz/promo-roi-platform.git
-cd promo-roi-platform
+git clone https://github.com/shoraaz/MarginLens.git
+cd MarginLens
 uv sync
 ```
 
