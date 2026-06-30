@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)', '-apple-system', 'sans-serif'],
+        mono: ['var(--font-mono-google)', 'IBM Plex Mono', 'monospace'],
+      },
       animation: {
         'pulse-slow': 'pulse 3s ease-in-out infinite',
         'fade-in': 'fadeIn 0.4s ease-out forwards',
