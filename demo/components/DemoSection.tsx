@@ -30,10 +30,9 @@ type Result = {
 
 // ─── Presets ─────────────────────────────────────────────────────────────────
 
-const PRESETS: Record<string, { label: string; emoji: string; description: string; inputs: Inputs }> = {
+const PRESETS: Record<string, { label: string; description: string; inputs: Inputs }> = {
   optimal: {
-    label: 'Optimal Timing',
-    emoji: '🚀',
+    label: 'Optimal timing',
     description: 'Long gap since last promo · strong baseline · peak season',
     inputs: {
       dayOfWeek: 1, storeType: 1, assortment: 1,
@@ -43,8 +42,7 @@ const PRESETS: Record<string, { label: string; emoji: string; description: strin
     },
   },
   poor: {
-    label: 'Poor Timing',
-    emoji: '📉',
+    label: 'Poor timing',
     description: 'Promo just ran · slow sales · off-season · nearby competitor',
     inputs: {
       dayOfWeek: 7, storeType: 2, assortment: 2,
@@ -54,8 +52,7 @@ const PRESETS: Record<string, { label: string; emoji: string; description: strin
     },
   },
   pent_up: {
-    label: 'Pent-up Demand',
-    emoji: '💥',
+    label: 'Pent-up demand',
     description: '30-day gap + high lag sales = maximum pent-up demand signal',
     inputs: {
       dayOfWeek: 5, storeType: 1, assortment: 0,
@@ -65,8 +62,7 @@ const PRESETS: Record<string, { label: string; emoji: string; description: strin
     },
   },
   holiday: {
-    label: 'Holiday Effect',
-    emoji: '🎉',
+    label: 'Holiday effect',
     description: 'State holiday suppresses baseline but boosts foot traffic uncertainty',
     inputs: {
       dayOfWeek: 6, storeType: 0, assortment: 0,
@@ -158,41 +154,37 @@ function ShapChart({ title, features }: { title: string; features: ShapEntry[] }
 
   return (
     <div>
-      <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{title}</div>
+      <div className="font-mono text-xs tracking-widest mb-3" style={{ color: 'var(--ink-faint)' }}>{title}</div>
       <div className="space-y-2.5">
         {features.map((f) => {
           const pos = f.value >= 0
-          const pct = (Math.abs(f.value) / maxAbs) * 100
           const barW = (Math.abs(f.value) / maxAbs) * BAR_MAX_PX
 
           return (
             <div key={f.feature} className="flex items-center gap-3">
               {/* Feature label */}
-              <div className="w-40 text-right text-xs text-gray-400 shrink-0 leading-tight">{f.feature}</div>
+              <div className="w-40 text-right text-xs shrink-0 leading-tight" style={{ color: 'var(--ink-dim)' }}>{f.feature}</div>
 
               {/* Bar track */}
               <div className="flex-1 relative h-5 flex items-center">
                 {/* Center line */}
-                <div className="absolute left-1/2 top-1 bottom-1 w-px bg-white/10" />
+                <div className="absolute left-1/2 top-1 bottom-1 w-px" style={{ background: 'var(--line)' }} />
 
                 {/* Bar */}
                 <div
-                  className="absolute h-3.5 rounded-sm bar-grow"
+                  className="absolute h-3.5 bar-grow"
                   style={{
-                    backgroundColor: pos ? 'rgba(34,197,94,0.75)' : 'rgba(239,68,68,0.75)',
+                    backgroundColor: pos ? 'var(--green)' : 'var(--brick)',
                     width: barW,
                     [pos ? 'left' : 'right']: '50%',
-                    boxShadow: pos
-                      ? '0 0 8px rgba(34,197,94,0.3)'
-                      : '0 0 8px rgba(239,68,68,0.3)',
                   }}
                 />
               </div>
 
               {/* Value */}
               <div
-                className="w-14 text-right text-xs font-mono font-semibold shrink-0"
-                style={{ color: pos ? '#4ade80' : '#f87171' }}
+                className="font-mono w-14 text-right text-xs font-medium shrink-0"
+                style={{ color: pos ? 'var(--green)' : 'var(--brick)' }}
               >
                 {pos ? '+' : ''}{f.value.toFixed(1)}
               </div>
@@ -218,8 +210,8 @@ function SliderRow({
   return (
     <div>
       <div className="flex justify-between items-baseline mb-1.5">
-        <label className="text-xs text-gray-400">{label}</label>
-        <span className="text-xs font-mono font-semibold text-indigo-300">{display}</span>
+        <label className="text-xs" style={{ color: 'var(--ink-dim)' }}>{label}</label>
+        <span className="font-mono text-xs font-medium" style={{ color: 'var(--amber)' }}>{display}</span>
       </div>
       <input
         type="range" min={min} max={max} step={step} value={value}
@@ -234,23 +226,23 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
   return (
     <button
       onClick={() => onChange(!value)}
-      className="flex items-center justify-between w-full p-2.5 rounded-lg transition-colors text-left"
+      className="flex items-center justify-between w-full p-2.5 transition-colors text-left"
       style={{
-        background: value ? 'rgba(129,140,248,0.12)' : 'rgba(255,255,255,0.03)',
-        border: `1px solid ${value ? 'rgba(129,140,248,0.3)' : 'rgba(255,255,255,0.06)'}`,
+        background: value ? 'rgba(245,166,35,0.08)' : 'var(--row)',
+        border: `1px solid ${value ? 'rgba(245,166,35,0.3)' : 'var(--line)'}`,
       }}
     >
-      <span className="text-xs text-gray-300">{label}</span>
+      <span className="text-xs" style={{ color: 'var(--ink-dim)' }}>{label}</span>
       <div
-        className="w-8 h-4.5 rounded-full relative transition-colors"
+        className="relative transition-colors"
         style={{
-          background: value ? '#6366f1' : 'rgba(255,255,255,0.1)',
+          background: value ? 'var(--amber)' : 'var(--line-bright)',
           width: 32, height: 18,
         }}
       >
         <div
-          className="absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform shadow-sm"
-          style={{ transform: value ? 'translateX(16px)' : 'translateX(2px)', width: 14, height: 14 }}
+          className="absolute top-0.5 transition-transform"
+          style={{ transform: value ? 'translateX(16px)' : 'translateX(2px)', width: 14, height: 14, background: 'var(--bg)' }}
         />
       </div>
     </button>
@@ -266,17 +258,17 @@ function SegmentControl<T extends number>({
 }) {
   return (
     <div>
-      <div className="text-xs text-gray-400 mb-1.5">{label}</div>
-      <div className="flex gap-1 rounded-lg p-0.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="text-xs mb-1.5" style={{ color: 'var(--ink-dim)' }}>{label}</div>
+      <div className="flex gap-1 p-0.5" style={{ background: 'var(--row)', border: '1px solid var(--line)' }}>
         {options.map((o) => (
           <button
             key={String(o.value)}
             onClick={() => onChange(o.value)}
-            className="flex-1 py-1.5 text-xs rounded-md font-medium transition-all"
+            className="flex-1 py-1.5 text-xs font-medium transition-all"
             style={{
-              background: value === o.value ? 'rgba(99,102,241,0.3)' : 'transparent',
-              color: value === o.value ? '#a5b4fc' : '#6b7280',
-              border: value === o.value ? '1px solid rgba(99,102,241,0.4)' : '1px solid transparent',
+              background: value === o.value ? 'rgba(245,166,35,0.14)' : 'transparent',
+              color: value === o.value ? 'var(--amber)' : 'var(--ink-faint)',
+              border: value === o.value ? '1px solid rgba(245,166,35,0.35)' : '1px solid transparent',
             }}
           >
             {o.label}
@@ -329,52 +321,51 @@ export default function DemoSection() {
   const isPositive = result?.roi_verdict === 'POSITIVE'
 
   return (
-    <section id="demo" className="px-6 py-24 max-w-7xl mx-auto">
+    <section id="demo" className="px-6 py-24 max-w-6xl mx-auto">
       {/* Section header */}
-      <div className="text-center mb-14">
-        <p className="text-xs text-indigo-400 font-semibold tracking-widest uppercase mb-3">Interactive Demo</p>
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Try the Model</h2>
-        <p className="text-gray-400 max-w-lg mx-auto">
+      <div className="mb-14">
+        <p className="register mb-3">§03 — INTERACTIVE DEMO</p>
+        <h2 className="text-2xl md:text-3xl font-medium mb-3">Try the model</h2>
+        <p className="max-w-lg" style={{ color: 'var(--ink-dim)' }}>
           Configure a promotion scenario. The model predicts sales lift, margin impact, and explains
           the top drivers via SHAP values — exactly as it runs in the live GKE API.
         </p>
       </div>
 
       {/* Preset buttons */}
-      <div className="flex flex-wrap justify-center gap-2 mb-10">
+      <div className="flex flex-wrap gap-2 mb-10">
         {Object.entries(PRESETS).map(([key, p]) => (
           <button
             key={key}
             onClick={() => handlePreset(key)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+            className="font-mono px-4 py-2 text-xs tracking-wide transition-all duration-150"
             style={{
-              border: '1px solid rgba(255,255,255,0.08)',
-              background: 'rgba(255,255,255,0.03)',
-              color: '#9ca3af',
+              border: '1px solid var(--line)',
+              background: 'var(--row)',
+              color: 'var(--ink-faint)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(129,140,248,0.35)'
-              e.currentTarget.style.color = '#e5e7eb'
+              e.currentTarget.style.borderColor = 'rgba(245,166,35,0.4)'
+              e.currentTarget.style.color = 'var(--ink)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
-              e.currentTarget.style.color = '#9ca3af'
+              e.currentTarget.style.borderColor = 'var(--line)'
+              e.currentTarget.style.color = 'var(--ink-faint)'
             }}
           >
-            <span>{p.emoji}</span>
-            <span>{p.label}</span>
+            {p.label}
           </button>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_1fr] gap-8 items-start">
+      <div className="grid lg:grid-cols-[1fr_1fr] gap-6 items-start">
         {/* ── Left: Form ── */}
-        <div className="space-y-5">
+        <div className="space-y-4">
           {/* Store Profile */}
-          <div className="card p-5 space-y-4">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Store Profile</div>
+          <div className="row p-5 space-y-4">
+            <div className="register">STORE PROFILE</div>
             <SegmentControl
-              label="Store Type"
+              label="Store type"
               value={inp.storeType}
               onChange={(v) => set('storeType', v)}
               options={[
@@ -391,7 +382,7 @@ export default function DemoSection() {
               ]}
             />
             <SliderRow
-              label="Competition Distance (m)"
+              label="Competition distance (m)"
               value={inp.competition_distance}
               min={300} max={15000} step={100}
               format={(v) => v >= 10000 ? `${(v / 1000).toFixed(1)} km` : `${v.toLocaleString()} m`}
@@ -405,20 +396,20 @@ export default function DemoSection() {
           </div>
 
           {/* Timing */}
-          <div className="card p-5 space-y-4">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Promotion Timing</div>
+          <div className="row p-5 space-y-4">
+            <div className="register">PROMOTION TIMING</div>
             <div>
-              <div className="text-xs text-gray-400 mb-1.5">Day of Week</div>
+              <div className="text-xs mb-1.5" style={{ color: 'var(--ink-dim)' }}>Day of week</div>
               <div className="flex gap-1">
                 {DOW_OPTIONS.map((d) => (
                   <button
                     key={d.value}
                     onClick={() => set('dayOfWeek', d.value)}
-                    className="flex-1 py-1.5 text-xs rounded-md font-medium transition-all"
+                    className="flex-1 py-1.5 text-xs font-medium transition-all"
                     style={{
-                      background: inp.dayOfWeek === d.value ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.04)',
-                      color: inp.dayOfWeek === d.value ? '#a5b4fc' : '#6b7280',
-                      border: inp.dayOfWeek === d.value ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.06)',
+                      background: inp.dayOfWeek === d.value ? 'rgba(245,166,35,0.14)' : 'var(--row)',
+                      color: inp.dayOfWeek === d.value ? 'var(--amber)' : 'var(--ink-faint)',
+                      border: inp.dayOfWeek === d.value ? '1px solid rgba(245,166,35,0.35)' : '1px solid var(--line)',
                     }}
                   >
                     {d.label}
@@ -427,17 +418,17 @@ export default function DemoSection() {
               </div>
             </div>
             <div>
-              <div className="text-xs text-gray-400 mb-1.5">Month</div>
+              <div className="text-xs mb-1.5" style={{ color: 'var(--ink-dim)' }}>Month</div>
               <div className="grid grid-cols-6 gap-1">
                 {MONTHS.map((m) => (
                   <button
                     key={m.value}
                     onClick={() => set('month', m.value)}
-                    className="py-1.5 text-xs rounded-md font-medium transition-all"
+                    className="py-1.5 text-xs font-medium transition-all"
                     style={{
-                      background: inp.month === m.value ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.04)',
-                      color: inp.month === m.value ? '#a5b4fc' : '#6b7280',
-                      border: inp.month === m.value ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.06)',
+                      background: inp.month === m.value ? 'rgba(245,166,35,0.14)' : 'var(--row)',
+                      color: inp.month === m.value ? 'var(--amber)' : 'var(--ink-faint)',
+                      border: inp.month === m.value ? '1px solid rgba(245,166,35,0.35)' : '1px solid var(--line)',
                     }}
                   >
                     {m.label}
@@ -446,7 +437,7 @@ export default function DemoSection() {
               </div>
             </div>
             <SliderRow
-              label="Days Since Last Promo"
+              label="Days since last promo"
               value={inp.days_since_last_promo}
               min={1} max={30}
               format={(v) => v === 30 ? '30+ days' : `${v} day${v === 1 ? '' : 's'}`}
@@ -455,24 +446,24 @@ export default function DemoSection() {
           </div>
 
           {/* Sales History */}
-          <div className="card p-5 space-y-4">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Recent Sales History</div>
+          <div className="row p-5 space-y-4">
+            <div className="register">RECENT SALES HISTORY</div>
             <SliderRow
-              label="30-Day Baseline Sales (avg non-promo)"
+              label="30-day baseline sales (avg non-promo)"
               value={inp.baseline_sales_30d}
               min={2500} max={7000} step={50}
               format={(v) => `${v.toLocaleString()} units`}
               onChange={(v) => set('baseline_sales_30d', v)}
             />
             <SliderRow
-              label="Lag-7 Sales (7 days ago)"
+              label="Lag-7 sales (7 days ago)"
               value={inp.lag_7_sales}
               min={1500} max={9000} step={50}
               format={(v) => `${v.toLocaleString()} units`}
               onChange={(v) => set('lag_7_sales', v)}
             />
             <SliderRow
-              label="Lag-30 Sales (30 days ago)"
+              label="Lag-30 sales (30 days ago)"
               value={inp.lag_30_sales}
               min={1500} max={9000} step={50}
               format={(v) => `${v.toLocaleString()} units`}
@@ -481,22 +472,20 @@ export default function DemoSection() {
           </div>
 
           {/* Conditions */}
-          <div className="card p-5 space-y-3">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">Conditions</div>
-            <Toggle label="School Holiday" value={inp.is_school_holiday} onChange={(v) => set('is_school_holiday', v)} />
-            <Toggle label="State/Public Holiday" value={inp.is_state_holiday} onChange={(v) => set('is_state_holiday', v)} />
+          <div className="row p-5 space-y-3">
+            <div className="register mb-1">CONDITIONS</div>
+            <Toggle label="School holiday" value={inp.is_school_holiday} onChange={(v) => set('is_school_holiday', v)} />
+            <Toggle label="State/public holiday" value={inp.is_state_holiday} onChange={(v) => set('is_state_holiday', v)} />
           </div>
 
           {/* Submit */}
           <button
             onClick={handlePredict}
             disabled={loading}
-            className="w-full py-4 rounded-xl font-bold text-white text-base transition-all duration-200 relative overflow-hidden"
+            className="font-mono w-full py-4 text-sm tracking-wide transition-all duration-150 relative overflow-hidden"
             style={{
-              background: loading
-                ? 'rgba(99,102,241,0.4)'
-                : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-              boxShadow: loading ? 'none' : '0 0 30px rgba(99,102,241,0.3)',
+              background: loading ? 'rgba(245,166,35,0.4)' : 'var(--amber)',
+              color: '#1A1306',
             }}
           >
             {loading ? (
@@ -508,7 +497,7 @@ export default function DemoSection() {
                 Running inference…
               </span>
             ) : (
-              'Run Prediction →'
+              'Run prediction →'
             )}
           </button>
         </div>
@@ -516,20 +505,20 @@ export default function DemoSection() {
         {/* ── Right: Results ── */}
         <div className="lg:sticky lg:top-8">
           {!result && !loading && (
-            <div className="card p-12 text-center">
-              <div className="text-5xl mb-4">🤖</div>
-              <div className="text-gray-400 text-sm">
+            <div className="row p-12 text-center">
+              <div className="font-mono text-xs tracking-widest mb-3" style={{ color: 'var(--ink-faint)' }}>AWAITING INPUT</div>
+              <div className="text-sm" style={{ color: 'var(--ink-dim)' }}>
                 Configure a scenario on the left and click{' '}
-                <span className="text-indigo-400 font-medium">Run Prediction</span> to see
+                <span className="font-medium" style={{ color: 'var(--amber)' }}>Run prediction</span> to see
                 the model's output with SHAP explanations.
               </div>
             </div>
           )}
 
           {loading && (
-            <div className="card p-12 text-center">
-              <div className="text-5xl mb-4 animate-pulse-slow">⚙️</div>
-              <div className="text-gray-500 text-sm">Loading XGBoost models + SHAP explainer…</div>
+            <div className="row p-12 text-center">
+              <div className="font-mono text-xs tracking-widest mb-3" style={{ color: 'var(--amber)' }}>RUNNING</div>
+              <div className="text-sm" style={{ color: 'var(--ink-faint)' }}>Loading XGBoost models + SHAP explainer…</div>
             </div>
           )}
 
@@ -537,19 +526,17 @@ export default function DemoSection() {
             <div className="space-y-4 animate-fade-in">
               {/* Verdict banner */}
               <div
-                className={`rounded-2xl p-5 text-center verdict-pop ${isPositive ? 'glow-green' : 'glow-red'}`}
+                className="p-5 text-center verdict-pop"
                 style={{
-                  background: isPositive
-                    ? 'linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(16,185,129,0.08) 100%)'
-                    : 'linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(220,38,38,0.08) 100%)',
-                  border: `1px solid ${isPositive ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+                  background: isPositive ? 'rgba(78,155,115,0.08)' : 'rgba(181,96,74,0.08)',
+                  border: `1px solid ${isPositive ? 'rgba(78,155,115,0.3)' : 'rgba(181,96,74,0.3)'}`,
+                  borderLeft: `2px solid ${isPositive ? 'var(--green)' : 'var(--brick)'}`,
                 }}
               >
-                <div className="text-3xl mb-1">{isPositive ? '✅' : '❌'}</div>
-                <div className="text-2xl font-extrabold" style={{ color: isPositive ? '#4ade80' : '#f87171' }}>
+                <div className="font-mono text-2xl font-medium" style={{ color: isPositive ? 'var(--green)' : 'var(--brick)' }}>
                   ROI {result.roi_verdict}
                 </div>
-                <div className="text-xs text-gray-400 mt-1">
+                <div className="text-xs mt-1" style={{ color: 'var(--ink-faint)' }}>
                   {isPositive
                     ? 'This promotion is predicted to generate net positive margin.'
                     : 'This promotion is predicted to cost more than it returns.'}
@@ -557,56 +544,55 @@ export default function DemoSection() {
               </div>
 
               {/* Two prediction cards */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="card p-4 text-center">
-                  <div className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Sales Lift</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="row p-4 text-center">
+                  <div className="font-mono text-xs tracking-wider mb-2" style={{ color: 'var(--ink-faint)' }}>SALES LIFT</div>
                   <div
-                    className="text-3xl font-extrabold count-in"
-                    style={{ color: result.sales_lift_pct >= 0 ? '#4ade80' : '#f87171' }}
+                    className="font-mono text-3xl font-medium count-in"
+                    style={{ color: result.sales_lift_pct >= 0 ? 'var(--green)' : 'var(--brick)' }}
                   >
                     {result.sales_lift_pct >= 0 ? '+' : ''}{result.sales_lift_pct}%
                   </div>
-                  <div className="text-xs text-gray-600 mt-1">vs. 30-day baseline</div>
+                  <div className="text-xs mt-1" style={{ color: 'var(--ink-faint)' }}>vs. 30-day baseline</div>
                 </div>
 
-                <div className="card p-4 text-center">
-                  <div className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Margin Impact</div>
+                <div className="row p-4 text-center">
+                  <div className="font-mono text-xs tracking-wider mb-2" style={{ color: 'var(--ink-faint)' }}>MARGIN IMPACT</div>
                   <div
-                    className="text-3xl font-extrabold count-in"
-                    style={{ color: isPositive ? '#4ade80' : '#f87171' }}
+                    className="font-mono text-3xl font-medium count-in"
+                    style={{ color: isPositive ? 'var(--green)' : 'var(--brick)' }}
                   >
                     {result.margin_impact >= 0 ? '+' : ''}{result.margin_impact}
                   </div>
-                  <div className="text-xs text-gray-600 mt-1">units · 20% FMCG margin</div>
+                  <div className="text-xs mt-1" style={{ color: 'var(--ink-faint)' }}>units · 20% FMCG margin</div>
                 </div>
               </div>
 
               {/* SHAP charts */}
-              <div className="card p-5 space-y-7">
+              <div className="row p-5 space-y-7">
                 <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="text-base">🔍</span>
-                    <span className="text-sm font-semibold text-white">SHAP Explanations</span>
-                    <span className="text-xs text-gray-500">— what drove this prediction</span>
+                    <span className="register">SHAP EXPLANATIONS</span>
+                    <span className="text-xs" style={{ color: 'var(--ink-faint)' }}>— what drove this prediction</span>
                   </div>
-                  <div className="text-xs text-gray-600 mb-4 flex items-center gap-3">
-                    <span className="flex items-center gap-1">
-                      <span className="inline-block w-3 h-2 rounded-sm bg-green-500/70" /> Positive impact
+                  <div className="text-xs mb-4 flex items-center gap-3" style={{ color: 'var(--ink-faint)' }}>
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-3 h-2" style={{ background: 'var(--green)' }} /> Positive impact
                     </span>
-                    <span className="flex items-center gap-1">
-                      <span className="inline-block w-3 h-2 rounded-sm bg-red-500/70" /> Negative impact
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-3 h-2" style={{ background: 'var(--brick)' }} /> Negative impact
                     </span>
                   </div>
                 </div>
                 <ShapChart title="margin_impact model" features={result.margin_shap} />
-                <div className="border-t border-white/5" />
+                <div className="hairline" />
                 <ShapChart title="sales_lift_pct model" features={result.lift_shap} />
               </div>
 
               {/* Feature values used */}
-              <div className="card p-4">
-                <div className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">
-                  Computed Input Vector
+              <div className="row p-4">
+                <div className="register mb-3">
+                  COMPUTED INPUT VECTOR
                 </div>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
                   {[
@@ -622,9 +608,9 @@ export default function DemoSection() {
                     ['month_cos', Math.cos((2 * Math.PI * inp.month) / 12).toFixed(3)],
                     ['promo_gap×baseline', (Math.min(inp.days_since_last_promo, 30) * inp.baseline_sales_30d).toFixed(0)],
                   ].map(([k, v]) => (
-                    <div key={String(k)} className="flex justify-between text-xs">
-                      <span className="text-gray-500 font-mono">{k}</span>
-                      <span className="text-gray-300 font-mono">{v}</span>
+                    <div key={String(k)} className="flex justify-between text-xs font-mono">
+                      <span style={{ color: 'var(--ink-faint)' }}>{k}</span>
+                      <span style={{ color: 'var(--ink-dim)' }}>{v}</span>
                     </div>
                   ))}
                 </div>
