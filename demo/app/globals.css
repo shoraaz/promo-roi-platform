@@ -3,101 +3,111 @@
 @tailwind utilities;
 
 :root {
-  --bg: #080810;
-  --card: #0f0f1a;
-  --card-elevated: #15152a;
-  --border: rgba(255, 255, 255, 0.06);
-  --border-bright: rgba(255, 255, 255, 0.12);
+  --bg: #0D1210;
+  --ink: #E8E4D8;
+  --ink-dim: #8A9189;
+  --ink-faint: #565F5A;
+  --amber: #F5A623;
+  --green: #4E9B73;
+  --brick: #B5604A;
+  --line: rgba(232, 228, 216, 0.10);
+  --line-bright: rgba(232, 228, 216, 0.18);
+  --row: rgba(232, 228, 216, 0.025);
 }
 
 html { scroll-behavior: smooth; }
 
 body {
   background-color: var(--bg);
-  color: #e2e8f0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  color: var(--ink);
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
+.font-mono { font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace; }
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--line-bright); border-radius: 0; }
 
 /* Range inputs */
 input[type='range'] {
   -webkit-appearance: none;
   width: 100%;
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.08);
+  height: 2px;
+  border-radius: 0;
+  background: var(--line);
   outline: none;
   cursor: pointer;
 }
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #818cf8;
+  width: 12px;
+  height: 12px;
+  border-radius: 0;
+  background: var(--amber);
   cursor: pointer;
   transition: box-shadow 0.15s;
-  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
 }
 input[type='range']:hover::-webkit-slider-thumb {
-  box-shadow: 0 0 0 6px rgba(129, 140, 248, 0.3);
+  box-shadow: 0 0 0 5px rgba(245, 166, 35, 0.15);
 }
 
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 40%, #c084fc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Amber accent text — used sparingly, on real values only */
+.accent-text { color: var(--amber); }
+
+/* Ledger rows — replaces glassy rounded cards */
+.row {
+  background: var(--row);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+.row-elevated {
+  background: rgba(232, 228, 216, 0.04);
+  border: 1px solid var(--line-bright);
+  border-radius: 2px;
 }
 
-/* Cards */
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-.card-elevated {
-  background: var(--card-elevated);
-  border: 1px solid var(--border-bright);
-  border-radius: 14px;
+/* Section label — monospace register marker, only for genuine sequence */
+.register {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
 }
 
-/* Pipeline arrow SVG animation */
-@keyframes dashMove {
-  to { stroke-dashoffset: -24; }
-}
-.arrow-animated {
-  stroke-dasharray: 6 6;
-  animation: dashMove 1.2s linear infinite;
-}
+/* Hairline divider */
+.hairline { border-top: 1px solid var(--line); }
 
-/* Glow utilities */
-.glow-indigo { box-shadow: 0 0 40px rgba(99, 102, 241, 0.12); }
-.glow-green  { box-shadow: 0 0 40px rgba(34, 197, 94, 0.18); }
-.glow-red    { box-shadow: 0 0 40px rgba(239, 68, 68, 0.18); }
-
-/* Number animation */
-@keyframes countUp {
-  from { opacity: 0; transform: translateY(6px); }
+/* Ticker strip animation — subtle, one-time on load, not looping */
+@keyframes tickerIn {
+  from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.count-in { animation: countUp 0.5s ease-out forwards; }
+.ticker-in { animation: tickerIn 0.5s ease-out forwards; }
 
-/* Verdict pulse */
-@keyframes verdictPop {
-  0%   { transform: scale(0.85); opacity: 0; }
-  60%  { transform: scale(1.04); }
-  100% { transform: scale(1);    opacity: 1; }
+/* Pipeline connector dash — slowed, quieter than before */
+@keyframes dashMove {
+  to { stroke-dashoffset: -20; }
 }
-.verdict-pop { animation: verdictPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.arrow-animated {
+  stroke-dasharray: 4 5;
+  animation: dashMove 2.4s linear infinite;
+}
 
-/* SHAP bar fill */
+/* Verdict reveal */
+@keyframes verdictPop {
+  0%   { opacity: 0; transform: translateY(3px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.verdict-pop { animation: verdictPop 0.3s ease-out forwards; }
+
+/* SHAP / bar fill */
 @keyframes barGrow {
   from { width: 0; }
 }
-.bar-grow { animation: barGrow 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.bar-grow { animation: barGrow 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* Positive / negative semantic colors, ledger-style not alert-style */
+.sig-positive { color: var(--green); }
+.sig-negative { color: var(--brick); }
