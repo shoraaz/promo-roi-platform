@@ -24,10 +24,8 @@ export default function Hero() {
 
         {/* Title */}
         <h1 className="text-6xl md:text-8xl font-extrabold tracking-tight text-white mb-6 leading-none">
-          Promo{' '}
-          <span className="gradient-text">ROI</span>
-          <br />
-          Platform
+          Margin
+          <span className="gradient-text">Lens</span>
         </h1>
 
         {/* Subtitle */}
@@ -64,7 +62,7 @@ export default function Hero() {
             Try the Demo →
           </a>
           <a
-            href="https://github.com/shoraaz/promo-roi-platform"
+            href="https://github.com/shoraaz/MarginLens"
             target="_blank"
             rel="noopener noreferrer"
             className="px-7 py-3.5 rounded-xl font-semibold text-gray-300 hover:text-white transition-all duration-200"
