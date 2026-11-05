@@ -18,8 +18,6 @@
 ## 🚀 Live Demo
 
 > **[→ View the interactive demo on Vercel](https://promo-roi.vercel.app)**
->
-> *(Update this link once you rename the Vercel project — see note below)*
 
 An interactive dashboard showcasing the platform's capabilities — live architecture diagram, model metrics, and a promotion ROI prediction simulator. No GCP account needed.
 
