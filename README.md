@@ -55,10 +55,7 @@ BigQuery (raw sales/promo data)
 │  · HPA (CPU-based autoscaling)  │
 └────────────────┬────────────────┘
                  │
-        ┌────────┴────────┐
-        ▼                 ▼
-  Grafana dashboards   Evidently
-  (latency, preds)     drift reports
+        
 ```
 
 **CI/CD:** Cloud Build triggers on every push → builds Docker images with SHA tags → deploys to GKE via `kubectl rollout`.
